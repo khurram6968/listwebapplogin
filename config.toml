@@ -1,0 +1,6 @@
+[database]
+host = "localhost"         # MySQL host
+port = 3306                # MySQL port (default: 3306)
+user = "root"              # MySQL username
+password = "Gh6968amu@" # MySQL password
+database = "milk_shop"     # MySQL database name
