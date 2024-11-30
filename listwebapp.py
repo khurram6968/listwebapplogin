@@ -2,19 +2,26 @@ import streamlit as st
 from datetime import datetime
 import pymysql
 import pandas as pd
+import os
 
-# Example username and password (For testing purposes, this can be replaced with a database or a secure method)
-VALID_USERNAME = "khurram"
-VALID_PASSWORD = "15199400"
+# Get MySQL credentials from environment variables
+MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")  # Default to localhost if not set
+MYSQL_USER = os.getenv("MYSQL_USER", "root")      # Replace with your MySQL username
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "Gh6968amu@")  # Replace with your MySQL password
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "milk_shop")  # Replace with your database name
 
 # MySQL database connection using PyMySQL
 def connect_to_db():
-    return pymysql.connect(
-        host="localhost",  # Host (default for MySQL Workbench is localhost)
-        user="root",       # Your MySQL username
-        password="Gh6968amu@",       # Your MySQL password (if any)
-        database="milk_shop"  # Name of your database
-    )
+    try:
+        return pymysql.connect(
+            host=MYSQL_HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASSWORD,
+            database=MYSQL_DATABASE
+        )
+    except pymysql.MySQLError as e:
+        st.error(f"Error connecting to database: {e}")
+        return None
 
 # Initialize session state for storing data
 if 'price_per_liter' not in st.session_state:
@@ -27,7 +34,7 @@ def check_login():
 
 # Login function
 def login(username, password):
-    if username == VALID_USERNAME and password == VALID_PASSWORD:
+    if username == "khurram" and password == "15199400":  # Replace with secure method
         st.session_state.logged_in = True
     else:
         st.session_state.logged_in = False
@@ -36,6 +43,8 @@ def login(username, password):
 # Load data from MySQL
 def load_data_from_db():
     conn = connect_to_db()
+    if conn is None:
+        return []
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM milk_data")
     result = cursor.fetchall()
@@ -45,6 +54,8 @@ def load_data_from_db():
 # Save data to MySQL
 def save_data_to_db(date, day, time, quantity, total_price):
     conn = connect_to_db()
+    if conn is None:
+        return
     cursor = conn.cursor()
     cursor.execute(
         "INSERT INTO milk_data (date, day, time, quantity, total_price) VALUES (%s, %s, %s, %s, %s)",
@@ -56,6 +67,8 @@ def save_data_to_db(date, day, time, quantity, total_price):
 # Delete data from MySQL
 def delete_data_from_db(entry_id):
     conn = connect_to_db()
+    if conn is None:
+        return
     cursor = conn.cursor()
     cursor.execute("DELETE FROM milk_data WHERE id = %s", (entry_id,))
     conn.commit()
