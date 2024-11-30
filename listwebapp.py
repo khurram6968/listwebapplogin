@@ -1,20 +1,28 @@
 import streamlit as st
-from datetime import datetime
 import pymysql
 import pandas as pd
-import os
+import toml
+from datetime import datetime
 
-# Get MySQL credentials from environment variables
-MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")  # Default to localhost if not set
-MYSQL_USER = os.getenv("MYSQL_USER", "root")      # Replace with your MySQL username
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "Gh6968amu@")  # Replace with your MySQL password
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "milk_shop")  # Replace with your database name
+# Load database configuration from config.toml
+try:
+    config = toml.load("config.toml")
+except FileNotFoundError:
+    st.error("Configuration file 'config.toml' not found. Please create it and restart the app.")
+    st.stop()
+
+MYSQL_HOST = config["database"]["host"]
+MYSQL_USER = config["database"]["user"]
+MYSQL_PASSWORD = config["database"]["password"]
+MYSQL_DATABASE = config["database"]["database"]
+MYSQL_PORT = int(config["database"].get("port", 3306))  # Default port 3306
 
 # MySQL database connection using PyMySQL
 def connect_to_db():
     try:
         return pymysql.connect(
             host=MYSQL_HOST,
+            port=MYSQL_PORT,
             user=MYSQL_USER,
             password=MYSQL_PASSWORD,
             database=MYSQL_DATABASE
@@ -34,7 +42,7 @@ def check_login():
 
 # Login function
 def login(username, password):
-    if username == "khurram" and password == "15199400":  # Replace with secure method
+    if username == "admin" and password == "password123":  # Replace with secure credentials
         st.session_state.logged_in = True
     else:
         st.session_state.logged_in = False
